@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "X Console Logger",
+  "version": "1.0.0",
+  "description": "Logs hello world when browsing X website",
+  "content_scripts": [
+    {
+      "matches": ["*://twitter.com/*", "*://x.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "webRequest",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [{
+    "resources": ["inject.js"],
+    "matches": ["*://twitter.com/*", "*://x.com/*"]
+  }],
+  "host_permissions": [
+    "*://twitter.com/*",
+    "*://x.com/*",
+    "https://*.arweave.net/*",
+    "http://127.0.0.1:9001/*",
+    "https://cu.ao-testnet.xyz/*",
+    "https://mu.ao-testnet.xyz/*",
+    "https://arweave.net/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  }
+}
