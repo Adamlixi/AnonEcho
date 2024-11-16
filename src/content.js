@@ -412,8 +412,7 @@ function setupEventListeners() {
     document.addEventListener('GET_SIGNER', (event) => {
         chrome.runtime.sendMessage({
             action: 'CreateTwitterComments',
-            signedData: event.detail.signedData,
-            tweetId: event.detail.tweetId
+            signedData: event.detail.signedData
         }, response => {
             console.log(response)
             if (response.success) {

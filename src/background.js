@@ -54,7 +54,7 @@ chrome.runtime.onMessage.addListener((messageData, sender, sendResponse) => {
             if (!response.ok) {
                 console.error('Error encountered when writing message via MU')
             } else {
-                sendResponse({ success: true , tweetId: messageData.tweetId});
+                sendResponse({ success: true });
             }
         })
         return true;
