@@ -117,7 +117,7 @@ function createHelloButton() {
         const currentUrl = window.location.href;
         const lastSegment = currentUrl.split('/').pop();
         window.postMessage({ 
-            type: 'SEND_TEXT',
+            type: 'SIGN_TEXT',
             text: text.trim(),  // 确保去除首尾空格
             tweetId: lastSegment
         }, '*');
@@ -319,10 +319,39 @@ function debounce(func, wait) {
 
 // 添加获取评论的函数
 const getComments = debounce((tweetId) => {
-    window.postMessage({ 
-        type: 'GET_COMMENTS',
+    console.log("getComments", tweetId);
+    chrome.runtime.sendMessage({
+        action: 'GetTwitterComments',
         tweetId: tweetId
-    }, '*');
+      }, response => {
+        if (response.success) {
+            const _comments = response.data.Messages[0].Data;
+            const comments = JSON.parse(_comments)
+            if (comments && Array.isArray(comments)) {
+                // 按时间戳降序排序（最新的在前面）
+                comments.sort((a, b) => {
+                    const timeA = new Date(a.time).getTime();
+                    const timeB = new Date(b.time).getTime();
+                    return timeB - timeA;  // 降序排序
+                });
+                // 获取容器
+                let container = document.querySelector('.custom-container');
+                if (container) {
+                    // 移除旧的评论区
+                    const oldCommentSection = container.querySelector('.comment-section');
+                    if (oldCommentSection) {
+                        oldCommentSection.remove();
+                    }
+                    
+                    // 创建并添加新的评论区
+                    const commentSection = createCommentSection(comments);
+                    container.appendChild(commentSection);
+                }
+            }
+        } else {
+          console.error('Error:', response.error);
+        }
+      });
 }, 1000); // 1秒的防抖时间
 
 // 修改 createContainer 函数
@@ -359,37 +388,6 @@ function setupEventListeners() {
         }
     });
 
-    // 修改评论事件监听器
-    document.addEventListener('COMMENTS_IN_TWITTER', (event) => {
-        const _comments = event.detail.comments;
-        console.log("Received comments:", _comments);
-        console.log("comments type:", typeof _comments)
-        const comments = JSON.parse(_comments)
-        if (comments && Array.isArray(comments)) {
-            // 按时间戳降序排序（最新的在前面）
-            comments.sort((a, b) => {
-                const timeA = new Date(a.time).getTime();
-                const timeB = new Date(b.time).getTime();
-                return timeB - timeA;  // 降序排序
-            });
-
-            console.log("Creating comment section")
-            // 获取容器
-            let container = document.querySelector('.custom-container');
-            if (container) {
-                // 移除旧的评论区
-                const oldCommentSection = container.querySelector('.comment-section');
-                if (oldCommentSection) {
-                    oldCommentSection.remove();
-                }
-                
-                // 创建并添加新的评论区
-                const commentSection = createCommentSection(comments);
-                container.appendChild(commentSection);
-            }
-        }
-    });
-
     // 修改钱包连接成功事件监听器
     document.addEventListener('ARCONNECT_SUCCESS', (event) => {
         const address = event.detail.address;
@@ -411,9 +409,19 @@ function setupEventListeners() {
         alert(`Connection failed: ${event.detail.error}`);
     });
 
-    document.addEventListener('COMMENT_CREATED', (event) => {
-        console.log("Comment created:", event.detail);
-        getComments(event.detail.tweetId);  // 使用防抖函数
+    document.addEventListener('GET_SIGNER', (event) => {
+        chrome.runtime.sendMessage({
+            action: 'CreateTwitterComments',
+            signedData: event.detail.signedData,
+            tweetId: event.detail.tweetId
+        }, response => {
+            console.log(response)
+            if (response.success) {
+                getComments(event.detail.tweetId);
+            } else {
+                console.error('Error:', response.error);
+            }
+        });
     });
 
 }

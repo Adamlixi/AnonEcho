@@ -17,7 +17,8 @@
     "declarativeNetRequestFeedback"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "web_accessible_resources": [{
     "resources": ["inject.js"],
@@ -32,6 +33,9 @@
     "https://mu.ao-testnet.xyz/*",
     "https://arweave.net/*"
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
   "declarative_net_request": {
     "rule_resources": [
       {
