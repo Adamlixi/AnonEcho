@@ -57,13 +57,18 @@ function createWalletButton() {
         margin-right: 10px;
         min-width: 140px;
     `;
-    button.textContent = 'Connect Wallet';
-    
+
+    // 检查钱包连接状态
+    window.postMessage({ type: 'CHECK_WALLET_CONNECTION' }, '*');
+
     // 添加悬停效果
     button.onmouseover = () => button.style.backgroundColor = '#1991db';
     button.onmouseout = () => button.style.backgroundColor = '#1DA1F2';
     
-    // 添加点击事件
+    // 初始文本
+    button.textContent = 'Connect Wallet';
+    
+    // 点击事件
     button.onclick = () => {
         window.postMessage({ type: 'CONNECT_ARWEAVE' }, '*');
     };
@@ -465,11 +470,9 @@ const getComments = debounce((tweetId) => {
         tweetId: tweetId
       }, response => {
         if (response.success) {
-            console.log("response.data", response.data)
             const _comments = response.data.Messages[0].Data;
             const comments = JSON.parse(_comments)
             if (comments && Array.isArray(comments)) {
-                console.log("comments", comments)
                 // const mockComments = [
                 //     {
                 //         textid: "comment_1",
@@ -613,6 +616,21 @@ function setupEventListeners() {
             renderCommentTree(commentTree, commentSection);
             
             container.appendChild(commentSection);
+        }
+    });
+
+    // 添加钱包状态检查响应处理
+    document.addEventListener('WALLET_STATUS', (event) => {
+        console.log("WALLET_STATUS", event.detail)
+        const { isConnected, address } = event.detail;
+        const walletButton = document.getElementById('wallet-connect-button');
+        
+        if (walletButton && isConnected && address) {
+            const formattedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
+            walletButton.textContent = formattedAddress;
+            walletButton.style.backgroundColor = '#28a745';  // 已连接状态使用绿色
+            walletButton.onmouseover = () => walletButton.style.backgroundColor = '#218838';
+            walletButton.onmouseout = () => walletButton.style.backgroundColor = '#28a745';
         }
     });
 

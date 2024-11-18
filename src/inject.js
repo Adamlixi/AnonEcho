@@ -48,6 +48,8 @@ window.addEventListener('message', async (event) => {
             console.log("messageToAO -> error:", error)
             return '';
         }
+    } else if (event.data.type === 'CHECK_WALLET_CONNECTION') {
+        checkWalletConnection();
     }
 }); 
 
@@ -57,4 +59,47 @@ function Uint8ArrayToString(fileData){
       dataString += String.fromCharCode(fileData[i]);
     }
     return dataString
+}
+
+// 添加钱包状态检查函数
+async function checkWalletConnection() {
+    try {
+        // 检查 arweaveWallet 是否存在
+        if (window.arweaveWallet) {
+            try {
+                // 获取当前连接的钱包地址
+                const address = await window.arweaveWallet.getActiveAddress();
+                if (address) {
+                    // 发送钱包已连接的消息
+                    document.dispatchEvent(new CustomEvent('WALLET_STATUS', {
+                        detail: {
+                            isConnected: true,
+                            address: address
+                        }
+                    }));
+                    return;
+                }
+            } catch (error) {
+                console.log('Wallet not connected:', error);
+            }
+        }
+        
+        // 如果没有连接，发送未连接状态
+        document.dispatchEvent(new CustomEvent('WALLET_STATUS', {
+            detail: {
+                isConnected: false,
+                address: null
+            }
+        }));
+    } catch (error) {
+        console.error('Error checking wallet connection:', error);
+        // 发送错误状态
+        document.dispatchEvent(new CustomEvent('WALLET_STATUS', {
+            detail: {
+                isConnected: false,
+                address: null,
+                error: error.message
+            }
+        }));
+    }
 }
