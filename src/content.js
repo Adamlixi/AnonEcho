@@ -119,7 +119,8 @@ function createHelloButton() {
         window.postMessage({ 
             type: 'SIGN_TEXT',
             text: text.trim(),  // 确保去除首尾空格
-            tweetId: lastSegment
+            tweetId: lastSegment,
+            parent: "",
         }, '*');
         
         // 发送成功后清空输入框
@@ -180,24 +181,24 @@ function formatTimestamp(timestamp) {
     return `${year}/${month}/${day} ${hours}:${minutes}`;
 }
 
-// 修改 createComment 函数中显示时间的部分
+// 修改 createComment 函数来添加回复按钮和回复功能
 function createComment(comment) {
-    const commentEl = document.createElement('div');
-    commentEl.style.cssText = `
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment-item';
+    commentDiv.style.cssText = `
         padding: 12px;
-        border-bottom: 1px solid #2f3336;
-        background-color: black;
-        color: white;
+        border-bottom: 1px solid #333;
+        margin: 8px 0;
     `;
 
-    // 评论主体
-    const mainContent = document.createElement('div');
-    mainContent.style.cssText = `
+    // 头像和内容容器
+    const contentContainer = document.createElement('div');
+    contentContainer.style.cssText = `
         display: flex;
         gap: 12px;
     `;
 
-    // 头像
+    // 头像 
     const avatar = document.createElement('div');
     avatar.style.cssText = `
         width: 40px;
@@ -211,7 +212,6 @@ function createComment(comment) {
         overflow: hidden;
     `;
 
-    // 添加匿名者SVG图标
     avatar.innerHTML = `
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" 
@@ -219,17 +219,24 @@ function createComment(comment) {
         </svg>
     `;
 
-    // 评论内容区
-    const content = document.createElement('div');
-    content.style.cssText = `
+    // 右侧内容区
+    const rightContent = document.createElement('div');
+    rightContent.style.cssText = `
         flex-grow: 1;
     `;
 
-    // 用户名
+    // 用户名和时间
+    const userTime = document.createElement('div');
+    userTime.style.cssText = `
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+    `;
+
     const username = document.createElement('span');
     username.style.cssText = `
         font-weight: bold;
-        margin-right: 8px;
+        color: #fff;
     `;
     // 修改用户名显示格式：前6位 + ... + 后4位
     const formatUsername = (name) => {
@@ -237,9 +244,8 @@ function createComment(comment) {
         if (name.length <= 10) return name;
         return `${name.slice(0, 6)}...${name.slice(-4)}`;
     };
-    username.textContent = formatUsername(comment.username);
+    username.textContent = formatUsername(comment.owner);
 
-    // 时间
     const time = document.createElement('span');
     time.style.cssText = `
         color: #71767b;
@@ -248,23 +254,157 @@ function createComment(comment) {
     `;
     time.textContent = formatTimestamp(comment.time);
 
-    // 评论文本
-    const text = document.createElement('div');
-    text.style.cssText = `
-        margin-top: 4px;
-        line-height: 1.3;
+    userTime.appendChild(username);
+    userTime.appendChild(time);
+
+    // 评论内容
+    const content = document.createElement('div');
+    content.style.cssText = `
+        color: #fff;
+        margin-bottom: 8px;
     `;
-    text.textContent = comment.text;
+    content.textContent = comment.message;
 
-    // 组装内容
-    content.appendChild(username);
-    content.appendChild(time);
-    content.appendChild(text);
-    mainContent.appendChild(avatar);
-    mainContent.appendChild(content);
-    commentEl.appendChild(mainContent);
+    // 修改回复按钮，添加回复数量和展开/折叠功能
+    const replyButton = document.createElement('div');
+    replyButton.style.cssText = `
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    `;
 
-    return commentEl;
+    const replyAction = document.createElement('button');
+    replyAction.style.cssText = `
+        background: none;
+        border: none;
+        color: #71767b;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    `;
+    replyAction.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z"/>
+        </svg>
+        Reply
+    `;
+
+    // 如果有回复，添加展开/折叠按钮
+    if (comment.replies && comment.replies.length > 0) {
+        const toggleReplies = document.createElement('button');
+        toggleReplies.style.cssText = `
+            background: none;
+            border: none;
+            color: #1DA1F2;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        `;
+        toggleReplies.textContent = `Show ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`;
+        
+        toggleReplies.onclick = (e) => {
+            e.stopPropagation();
+            comment.isExpanded = !comment.isExpanded;
+            
+            // 获取该评论下的所有回复元素
+            const replyElements = commentDiv.parentNode.querySelectorAll(
+                `[data-parent-id="${comment.textid}"]`
+            );
+            
+            replyElements.forEach(element => {
+                element.style.display = comment.isExpanded ? 'block' : 'none';
+            });
+            
+            toggleReplies.textContent = comment.isExpanded 
+                ? `Hide ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`
+                : `Show ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`;
+        };
+        
+        replyButton.appendChild(toggleReplies);
+    }
+
+    replyButton.appendChild(replyAction);
+
+    // 回复输入框容器（默认隐藏）
+    const replyContainer = document.createElement('div');
+    replyContainer.style.cssText = `
+        margin-top: 8px;
+        display: none;
+    `;
+
+    const replyInput = createTextBox();  // 复用之前的 createTextBox 函数
+    replyInput.style.marginTop = '8px';
+
+    const replySubmitButton = document.createElement('button');
+    replySubmitButton.style.cssText = `
+        padding: 6px 16px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 20px;
+        background-color: #1DA1F2;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    `;
+    replySubmitButton.textContent = 'Reply';
+
+    replyContainer.appendChild(replyInput);
+    replyContainer.appendChild(replySubmitButton);
+
+    // 添加回复按钮点击事件
+    replyButton.onclick = () => {
+        replyContainer.style.display = replyContainer.style.display === 'none' ? 'block' : 'none';
+    };
+
+    // 添加回复提交事件
+    replySubmitButton.onclick = () => {
+        const replyText = replyInput.textContent;
+        if (replyText && replyText !== 'Write your anonymous comment...') {
+            // 发送回复消息
+            const currentUrl = window.location.href;
+            const lastSegment = currentUrl.split('/').pop();
+            window.postMessage({ 
+                type: 'SIGN_TEXT',
+                text: replyText,  // 确保去除首尾空格
+                tweetId: lastSegment,
+                parent: comment.textid,
+            }, '*');
+            
+            // 清空并隐藏回复框
+            replyInput.textContent = 'Write your anonymous comment...';
+            replyContainer.style.display = 'none';
+        }
+    };
+
+    // 在回复按钮中添加回复数量
+    if (comment.replies && comment.replies.length > 0) {
+        const replyCount = document.createElement('span');
+        replyCount.style.cssText = `
+            color: #71767b;
+            font-size: 13px;
+            margin-left: 4px;
+        `;
+        replyCount.textContent = `${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`;
+        replyButton.appendChild(replyCount);
+    }
+
+    // 组装评论结构
+    rightContent.appendChild(userTime);
+    rightContent.appendChild(content);
+    rightContent.appendChild(replyButton);
+    rightContent.appendChild(replyContainer);
+
+    contentContainer.appendChild(avatar);
+    contentContainer.appendChild(rightContent);
+
+    commentDiv.appendChild(contentContainer);
+
+    return commentDiv;
 }
 
 // 创建评论区
@@ -325,28 +465,54 @@ const getComments = debounce((tweetId) => {
         tweetId: tweetId
       }, response => {
         if (response.success) {
+            console.log("response.data", response.data)
             const _comments = response.data.Messages[0].Data;
             const comments = JSON.parse(_comments)
             if (comments && Array.isArray(comments)) {
-                // 按时间戳降序排序（最新的在前面）
-                comments.sort((a, b) => {
-                    const timeA = new Date(a.time).getTime();
-                    const timeB = new Date(b.time).getTime();
-                    return timeB - timeA;  // 降序排序
-                });
-                // 获取容器
-                let container = document.querySelector('.custom-container');
-                if (container) {
-                    // 移除旧的评论区
-                    const oldCommentSection = container.querySelector('.comment-section');
-                    if (oldCommentSection) {
-                        oldCommentSection.remove();
+                console.log("comments", comments)
+                // const mockComments = [
+                //     {
+                //         textid: "comment_1",
+                //         message: "This is the first comment! Really interesting thread.",
+                //         time: Date.now() - 3600000 * 2, // 2小时前
+                //         parent: "comment",
+                //         username: "Anonymous"
+                //     },
+                //     {
+                //         textid: "comment_2",
+                //         message: "I totally agree with this point of view!",
+                //         time: Date.now() - 1800000, // 30分钟前
+                //         parent: "comment",
+                //         username: "Anonymous"
+                //     },
+                //     {
+                //         textid: "reply_1",
+                //         message: "This is a reply to the first comment",
+                //         time: Date.now() - 3000000, // 50分钟前
+                //         parent: "comment_1",
+                //         username: "Anonymous"
+                //     },
+                //     {
+                //         textid: "comment_3",
+                //         message: "Very insightful discussion here",
+                //         time: Date.now() - 300000, // 5分钟前
+                //         parent: "comment",
+                //         username: "Anonymous"
+                //     },
+                //     {
+                //         textid: "reply_2",
+                //         message: "Interesting perspective!",
+                //         time: Date.now() - 60000, // 1分钟前
+                //         parent: "comment_1",
+                //         username: "Anonymous"
+                //     }
+                // ];
+                document.dispatchEvent(new CustomEvent('COMMENTS_IN_TWITTER', {
+                    detail: {
+                        success: true,
+                        comments: comments
                     }
-                    
-                    // 创建并添加新的评论区
-                    const commentSection = createCommentSection(comments);
-                    container.appendChild(commentSection);
-                }
+                }));
             }
         } else {
           console.error('Error:', response.error);
@@ -421,6 +587,33 @@ function setupEventListeners() {
                 console.error('Error:', response.error);
             }
         });
+    });
+
+    document.addEventListener('COMMENTS_IN_TWITTER', (event) => {
+        console.log("Received comments event");
+        const { success, comments } = event.detail;
+        
+        let container = document.querySelector('.custom-container');
+        if (container) {
+            const oldCommentSection = container.querySelector('.comment-section');
+            if (oldCommentSection) {
+                oldCommentSection.remove();
+            }
+            
+            const commentSection = document.createElement('div');
+            commentSection.className = 'comment-section';
+            commentSection.style.cssText = `
+                margin-top: 16px;
+            `;
+
+            // 创建评论树结构
+            const commentTree = buildCommentTree(comments);
+            
+            // 渲染评论树
+            renderCommentTree(commentTree, commentSection);
+            
+            container.appendChild(commentSection);
+        }
     });
 
 }
@@ -521,3 +714,63 @@ function init() {
 
 // 启动初始化
 init();
+
+// 修改评论树构建和渲染逻辑
+function buildCommentTree(comments) {
+    // 首先按时间排序（最新的在前）
+    const sortedComments = [...comments].sort((a, b) => b.time - a.time);
+    
+    const commentMap = new Map();
+    const rootComments = [];
+
+    // 将所有评论放入 Map 中
+    sortedComments.forEach(comment => {
+        comment.replies = [];
+        comment.isExpanded = false; // 添加折叠状态
+        commentMap.set(comment.textid, comment);
+    });
+
+    // 构建树结构
+    sortedComments.forEach(comment => {
+        if (comment.parent === 'comment') {
+            rootComments.push(comment);
+        } else {
+            const parentComment = commentMap.get(comment.parent);
+            if (parentComment) {
+                parentComment.replies.push(comment);
+            }
+        }
+    });
+
+    // 对每个评论的回复也按时间排序
+    rootComments.forEach(comment => {
+        if (comment.replies.length > 0) {
+            comment.replies.sort((a, b) => b.time - a.time);
+        }
+    });
+
+    return rootComments;
+}
+
+// 修改渲染评论树的函数
+function renderCommentTree(comments, container, level = 0) {
+    comments.forEach(comment => {
+        const commentElement = createComment(comment);
+        
+        // 为回复评论添加数据属性和样式
+        if (level > 0) {
+            commentElement.dataset.parentId = comment.parent;
+            commentElement.style.marginLeft = `${level * 20}px`;
+            commentElement.style.borderLeft = '2px solid #333';
+            commentElement.style.paddingLeft = '20px';
+            commentElement.style.display = 'none'; // 默认隐藏回复
+        }
+
+        container.appendChild(commentElement);
+
+        // 递归渲染回复
+        if (comment.replies && comment.replies.length > 0) {
+            renderCommentTree(comment.replies, container, level + 1);
+        }
+    });
+}

@@ -3,16 +3,21 @@ Handlers.add(
     Handlers.utils.hasMatchingTag("Action", "CreateComment"),
     function (msg)
         print(msg.Message)
-        createComment(msg.From, msg.TwitterId, msg.Message, msg.Timestamp)
+        local parent = msg.Parent
+        if parent == nil or parent == "" then
+            parent = "comment"
+        end
+        createComment(msg.From, msg.TwitterId, msg.Message, parent, msg.Timestamp)
         msg.reply({Data ="Success"})
     end
 )
 
 
 
-function createComment(owner, twitter_id, message, time)
+function createComment(owner, twitter_id, message, parent, time)
+    local textid = twitter_id .. "_" ..  tostring(XTalkId) .. "_" .. "ao"
     local stmt = DB:prepare [[
-        REPLACE INTO x_talk (id, owner, likes, dislikes, twitter_id, message, time) VALUES (:id, :owner, :likes, :dislikes, :twitter_id, :message, :time);
+        REPLACE INTO x_talk (id, textid, owner, likes, dislikes, twitter_id, message, parent, time) VALUES (:id, :textid, :owner, :likes, :dislikes, :twitter_id, :message, :parent, :time);
     ]]
 
     if not stmt then
@@ -20,11 +25,13 @@ function createComment(owner, twitter_id, message, time)
     end
     stmt:bind_names({
         id = XTalkId,
+        textid = textid,
         owner = owner,
         likes = 0,
         dislikes = 0,
         twitter_id = twitter_id,
         message = message,
+        parent = parent,
         time = time
     })
     stmt:step()

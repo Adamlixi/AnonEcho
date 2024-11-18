@@ -24,7 +24,7 @@ window.addEventListener('message', async (event) => {
         }
     } else if (event.data.type === 'SIGN_TEXT') {
         try {
-            const PROCESS = "VIy_yhCG3JFu8cHdFuMwo6lxslmaW5gtyZ6IBnksSok"
+            const PROCESS = "0uWvAQMhze2NT94rr46cbmKc5hpzuByQo0E9PNkVgOI"
             const {createDataItemSigner} = require("@permaweb/aoconnect")
             const signer = createDataItemSigner(window.arweaveWallet)
             const tags = [
@@ -33,7 +33,8 @@ window.addEventListener('message', async (event) => {
                 { name: 'Message', value: event.data.text },
                 { name: 'Variant', value: 'ao.TN.1' },
                 { name: 'Type', value: 'Message' },
-                { name: 'Data-Protocol', value: 'ao' }
+                { name: 'Data-Protocol', value: 'ao' },
+                { name: 'Parent', value: event.data.parent }
             ]
             const signedDataItem = await signer({ data: "", tags, target: PROCESS, anchor: "" })
             document.dispatchEvent(new CustomEvent('GET_SIGNER', {

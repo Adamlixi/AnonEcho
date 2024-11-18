@@ -11,7 +11,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // 处理消息
-const PROCESS = "VIy_yhCG3JFu8cHdFuMwo6lxslmaW5gtyZ6IBnksSok"
+const PROCESS = "0uWvAQMhze2NT94rr46cbmKc5hpzuByQo0E9PNkVgOI"
 chrome.runtime.onMessage.addListener((messageData, sender, sendResponse) => {
     console.log("Background received message:", messageData);
     const { connect } = require('@permaweb/aoconnect');
