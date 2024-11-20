@@ -462,7 +462,7 @@ function debounce(func, wait) {
     };
 }
 
-// 添加获取评论的函数
+// 添加获取���论的函数
 const getComments = debounce((tweetId) => {
     console.log("getComments", tweetId);
     chrome.runtime.sendMessage({
@@ -640,12 +640,33 @@ function setupEventListeners() {
 function insertElements() {
     const targetElement = document.querySelector('[data-testid="inline_reply_offscreen"]');
     
-    if (targetElement) {
+    if (targetElement && targetElement.parentNode) {  // 添加 parentNode 检查
         const existingContainer = document.querySelector('.custom-container');
         if (!existingContainer) {
-            const container = createContainer();
-            targetElement.parentNode.insertBefore(container, targetElement.nextSibling);
+            try {
+                const container = createContainer();
+                targetElement.parentNode.insertBefore(container, targetElement.nextSibling);
+            } catch (error) {
+                console.error('Error inserting container:', error);
+                // 如果插入失败，可以尝试延迟重试
+                setTimeout(() => {
+                    const retryTarget = document.querySelector('[data-testid="inline_reply_offscreen"]');
+                    if (retryTarget && retryTarget.parentNode && !document.querySelector('.custom-container')) {
+                        const container = createContainer();
+                        retryTarget.parentNode.insertBefore(container, retryTarget.nextSibling);
+                    }
+                }, 500);
+            }
         }
+    } else {
+        // 如果目标元素不存在或没有父节点，等待一段时间后重试
+        setTimeout(() => {
+            const retryTarget = document.querySelector('[data-testid="inline_reply_offscreen"]');
+            if (retryTarget && retryTarget.parentNode && !document.querySelector('.custom-container')) {
+                const container = createContainer();
+                retryTarget.parentNode.insertBefore(container, retryTarget.nextSibling);
+            }
+        }, 500);
     }
 }
 
@@ -665,14 +686,11 @@ function setupUrlChangeListener() {
                 existingContainer.remove();
             }
             
-            // 等待页面加载完成后执行 insertElements
-            waitForElement('[data-testid="inline_reply_offscreen"]')
-                .then(() => {
-                    insertElements();
-                })
-                .catch(() => {
-                    console.log('Target element not found after timeout');
-                });
+            // URL 变化后，等待目标元素出现
+            const targetElement = document.querySelector('[data-testid="inline_reply_offscreen"]');
+            if (targetElement) {
+                insertElements();
+            }
         }
     });
 
@@ -709,28 +727,67 @@ function waitForElement(selector, timeout = 10000) {
     });
 }
 
+// 添加 MutationObserver 来监听 DOM 变化
+function setupDOMObserver() {
+    const observer = new MutationObserver(debounce((mutations) => {
+        const targetElement = document.querySelector('[data-testid="inline_reply_offscreen"]');
+        if (targetElement && targetElement.parentNode && !document.querySelector('.custom-container')) {
+            try {
+                insertElements();
+            } catch (error) {
+                console.error('Error in DOM observer:', error);
+            }
+        }
+    }, 500));
+
+    // 配置 observer
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true  // 添加属性监听
+    });
+
+    return observer;
+}
+
 // 修改初始化函数
 function init() {
-    // 首先检查插件状态
     chrome.storage.local.get(['extensionEnabled'], (result) => {
         const isEnabled = result.extensionEnabled !== false;
         if (!isEnabled) {
-            // 如果插件被禁用，直接返回
             return;
         }
 
-        // 如果插件启用，继续初始化
-        injectScript();
-        setupEventListeners();
-        setupUrlChangeListener();
-        
-        waitForElement('[data-testid="inline_reply_offscreen"]')
-            .then(() => {
-                insertElements();
-            })
-            .catch(() => {
-                console.log('Target element not found after timeout');
+        // 确保 DOM 已经加载
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                injectScript();
+                setupEventListeners();
+                setupUrlChangeListener();
+                const domObserver = setupDOMObserver();
+                
+                // 初始检查
+                setTimeout(() => {
+                    const targetElement = document.querySelector('[data-testid="inline_reply_offscreen"]');
+                    if (targetElement && targetElement.parentNode) {
+                        insertElements();
+                    }
+                }, 500);
             });
+        } else {
+            injectScript();
+            setupEventListeners();
+            setupUrlChangeListener();
+            const domObserver = setupDOMObserver();
+            
+            // 初始检查
+            setTimeout(() => {
+                const targetElement = document.querySelector('[data-testid="inline_reply_offscreen"]');
+                if (targetElement && targetElement.parentNode) {
+                    insertElements();
+                }
+            }, 500);
+        }
     });
 }
 
