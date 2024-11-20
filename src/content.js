@@ -342,7 +342,7 @@ function createComment(comment) {
         display: none;
     `;
 
-    const replyInput = createTextBox();  // 复用之前的 createTextBox 函���
+    const replyInput = createTextBox();  // 复用之前的 createTextBox 函
     replyInput.style.marginTop = '8px';
 
     const replySubmitButton = document.createElement('button');
@@ -665,7 +665,7 @@ function setupUrlChangeListener() {
                 existingContainer.remove();
             }
             
-            // 等待页面加载���成后执行 insertElements
+            // 等待页面加载完成后执行 insertElements
             waitForElement('[data-testid="inline_reply_offscreen"]')
                 .then(() => {
                     insertElements();
@@ -711,24 +711,55 @@ function waitForElement(selector, timeout = 10000) {
 
 // 修改初始化函数
 function init() {
-    // 注入脚本
-    injectScript();
-    
-    // 设置事件监听器
-    setupEventListeners();
-    
-    // 设置 URL 变化监听
-    setupUrlChangeListener();
-    
-    // 等待页面加载完成后执行 insertElements
-    waitForElement('[data-testid="inline_reply_offscreen"]')
-        .then(() => {
-            insertElements();
-        })
-        .catch(() => {
-            console.log('Target element not found after timeout');
-        });
+    // 首先检查插件状态
+    chrome.storage.local.get(['extensionEnabled'], (result) => {
+        const isEnabled = result.extensionEnabled !== false;
+        if (!isEnabled) {
+            // 如果插件被禁用，直接返回
+            return;
+        }
+
+        // 如果插件启用，继续初始化
+        injectScript();
+        setupEventListeners();
+        setupUrlChangeListener();
+        
+        waitForElement('[data-testid="inline_reply_offscreen"]')
+            .then(() => {
+                insertElements();
+            })
+            .catch(() => {
+                console.log('Target element not found after timeout');
+            });
+    });
 }
+
+// 修改状态变化监听器
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'EXTENSION_STATE_CHANGED') {
+        const isEnabled = message.enabled;
+        
+        // 获取容器
+        const container = document.querySelector('.custom-container');
+        if (container) {
+            if (isEnabled) {
+                container.style.display = 'block';
+                // 重新初始化功能
+                init();
+            } else {
+                container.style.display = 'none';
+                // 可选：移除注入的脚本
+                const injectedScript = document.querySelector('script[src*="inject.js"]');
+                if (injectedScript) {
+                    injectedScript.remove();
+                }
+            }
+        } else if (isEnabled) {
+            // 如果容器不存在但插件被启用，尝试初始化
+            init();
+        }
+    }
+});
 
 // 启动初始化
 init();

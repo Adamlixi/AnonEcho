@@ -12,8 +12,8 @@ self.addEventListener('activate', (event) => {
 
 // 监听插件安装或更新
 chrome.runtime.onInstalled.addListener(() => {
-  // 设置初始状态为启用
-  chrome.storage.local.set({ extensionEnabled: true });
+    // 设置初始状态为启用
+    chrome.storage.local.set({ extensionEnabled: true });
 });
 
 // 监听来自 popup 的消息
@@ -28,21 +28,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // 监听存储变化
 chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'local' && changes.extensionEnabled) {
-    const isEnabled = changes.extensionEnabled.newValue;
-    
-    if (isEnabled) {
-      // 启用规则
-      chrome.declarativeNetRequest.updateEnabledRulesets({
-        enableRulesetIds: ["ao_rules"]
-      });
-    } else {
-      // 禁用规则
-      chrome.declarativeNetRequest.updateEnabledRulesets({
-        disableRulesetIds: ["ao_rules"]
-      });
+    if (namespace === 'local' && changes.extensionEnabled) {
+        const isEnabled = changes.extensionEnabled.newValue;
+        
+        if (isEnabled) {
+            // 启用规则
+            chrome.declarativeNetRequest.updateEnabledRulesets({
+                enableRulesetIds: ["ao_rules"]
+            }).catch(err => console.log('Error enabling rules:', err));
+        } else {
+            // 禁用规则
+            chrome.declarativeNetRequest.updateEnabledRulesets({
+                disableRulesetIds: ["ao_rules"]
+            }).catch(err => console.log('Error disabling rules:', err));
+            
+            // 清理当前标签页的内容
+            chrome.tabs.query({}, (tabs) => {
+                tabs.forEach(tab => {
+                    try {
+                        chrome.tabs.sendMessage(tab.id, {
+                            type: 'EXTENSION_STATE_CHANGED',
+                            enabled: false
+                        });
+                    } catch (error) {
+                        console.log('Failed to send message to tab:', tab.id);
+                    }
+                });
+            });
+        }
     }
-  }
 });
 
 // 处理消息

@@ -53,7 +53,7 @@ function Popup() {
           color: '#00ff41',
           textShadow: '0 0 10px #00ff41'
         }}>
-          AO Extension
+          AnonEcho
         </h2>
         
         {/* 重新设计的开关按钮 */}
