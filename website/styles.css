@@ -1,0 +1,375 @@
+:root {
+    --neon-green: #00ff41;
+    --dark-bg: #0a0a0a;
+    --darker-bg: #050505;
+    --text-color: #e0e0e0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Glitch Effect */
+.glitch-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+.glitch {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--neon-green);
+    text-shadow: 0 0 10px var(--neon-green);
+    position: relative;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 #ff00c1;
+    animation: glitch-1 2s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    left: -2px;
+    text-shadow: 2px 0 #00fff9;
+    animation: glitch-2 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-1 {
+    0% { clip-path: inset(20% 0 30% 0); }
+    20% { clip-path: inset(60% 0 10% 0); }
+    40% { clip-path: inset(40% 0 50% 0); }
+    60% { clip-path: inset(80% 0 5% 0); }
+    80% { clip-path: inset(10% 0 70% 0); }
+    100% { clip-path: inset(30% 0 20% 0); }
+}
+
+@keyframes glitch-2 {
+    0% { clip-path: inset(15% 0 35% 0); }
+    20% { clip-path: inset(55% 0 15% 0); }
+    40% { clip-path: inset(45% 0 45% 0); }
+    60% { clip-path: inset(75% 0 10% 0); }
+    80% { clip-path: inset(15% 0 65% 0); }
+    100% { clip-path: inset(25% 0 25% 0); }
+}
+
+/* Navigation */
+header {
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 100;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-link {
+    color: var(--neon-green);
+    text-decoration: none;
+    padding: 8px 16px;
+    border: 1px solid var(--neon-green);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: var(--neon-green);
+    color: var(--dark-bg);
+    box-shadow: 0 0 20px var(--neon-green);
+}
+
+/* Hero Section */
+#hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(45deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+}
+
+.hero-content h1 {
+    font-size: 4em;
+    color: var(--neon-green);
+    text-shadow: 0 0 20px var(--neon-green);
+    margin-bottom: 20px;
+}
+
+.subtitle {
+    font-size: 1.5em;
+    margin-bottom: 40px;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.cta-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border: 2px solid var(--neon-green);
+    border-radius: 8px;
+    color: var(--neon-green);
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: var(--neon-green);
+    color: var(--dark-bg);
+    box-shadow: 0 0 30px var(--neon-green);
+}
+
+.chrome-icon,
+.github-icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+/* Features Section */
+#features {
+    padding: 100px 20px;
+    background-color: var(--darker-bg);
+}
+
+.section-title {
+    text-align: center;
+    color: var(--neon-green);
+    font-size: 2.5em;
+    margin-bottom: 50px;
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    padding: 30px;
+    border: 1px solid var(--neon-green);
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px var(--neon-green);
+}
+
+.feature-icon {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+/* Installation Section */
+#install {
+    padding: 100px 20px;
+}
+
+.install-steps {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.step {
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background-color: var(--neon-green);
+    color: var(--dark-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-weight: bold;
+}
+
+/* Footer */
+footer {
+    padding: 40px 20px;
+    background-color: var(--darker-bg);
+    border-top: 1px solid var(--neon-green);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.social-links {
+    display: flex;
+    gap: 20px;
+}
+
+.social-link {
+    color: var(--neon-green);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 3em;
+    }
+
+    .subtitle {
+        font-size: 1.2em;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* 视差滚动相关样式 */
+section {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* 确保每个部分有足够的间距 */
+#features, #install {
+    margin-top: 100px;
+    padding: 100px 0;
+    position: relative;
+    background-color: var(--darker-bg);
+}
+
+/* 添加过渡效果 */
+.hero-content,
+.feature-card,
+.step {
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    will-change: transform, opacity;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.feature-card,
+.step {
+    opacity: 0;
+}
+
+.feature-card.visible,
+.step.visible {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* 确保内容不会重叠 */
+.section-content {
+    position: relative;
+    z-index: 2;
+    background-color: var(--darker-bg);
+}
+
+/* 添加层次感 */
+.feature-card,
+.step {
+    position: relative;
+    z-index: 2;
+}
+
+/* 优化滚动性能 */
+* {
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Logo 样式 */
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    filter: drop-shadow(0 0 8px #00ff41);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        filter: drop-shadow(0 0 8px #00ff41);
+    }
+    50% {
+        filter: drop-shadow(0 0 12px #00ff41);
+    }
+    100% {
+        filter: drop-shadow(0 0 8px #00ff41);
+    }
+} 
