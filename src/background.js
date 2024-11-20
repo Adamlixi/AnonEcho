@@ -10,6 +10,41 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(clients.claim());  // 确保新的 Service Worker 立即接管所有客户端
 });
 
+// 监听插件安装或更新
+chrome.runtime.onInstalled.addListener(() => {
+  // 设置初始状态为启用
+  chrome.storage.local.set({ extensionEnabled: true });
+});
+
+// 监听来自 popup 的消息
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'GET_ENABLED_STATE') {
+    chrome.storage.local.get(['extensionEnabled'], (result) => {
+      sendResponse({ enabled: result.extensionEnabled !== false });
+    });
+    return true;
+  }
+});
+
+// 监听存储变化
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.extensionEnabled) {
+    const isEnabled = changes.extensionEnabled.newValue;
+    
+    if (isEnabled) {
+      // 启用规则
+      chrome.declarativeNetRequest.updateEnabledRulesets({
+        enableRulesetIds: ["ao_rules"]
+      });
+    } else {
+      // 禁用规则
+      chrome.declarativeNetRequest.updateEnabledRulesets({
+        disableRulesetIds: ["ao_rules"]
+      });
+    }
+  }
+});
+
 // 处理消息
 const PROCESS = "0uWvAQMhze2NT94rr46cbmKc5hpzuByQo0E9PNkVgOI"
 chrome.runtime.onMessage.addListener((messageData, sender, sendResponse) => {

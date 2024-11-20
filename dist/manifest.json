@@ -1,8 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "X Console Logger",
+  "name": "AnonEcho",
   "version": "1.0.0",
-  "description": "Logs hello world when browsing X website",
+  "description": "Anonymously comment",
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
   "content_scripts": [
     {
       "matches": ["*://twitter.com/*", "*://x.com/*"],
@@ -13,36 +26,24 @@
   "permissions": [
     "activeTab",
     "webRequest",
-    "declarativeNetRequest",
-    "declarativeNetRequestFeedback"
+    "storage",
+    "declarativeNetRequest"
   ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
-  "web_accessible_resources": [{
-    "resources": ["inject.js"],
-    "matches": ["*://twitter.com/*", "*://x.com/*"]
-  }],
-  "host_permissions": [
-    "*://twitter.com/*",
-    "*://x.com/*",
-    "https://*.arweave.net/*",
-    "http://127.0.0.1:9001/*",
-    "https://cu.ao-testnet.xyz/*",
-    "https://mu.ao-testnet.xyz/*",
-    "https://arweave.net/*"
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
-  },
   "declarative_net_request": {
     "rule_resources": [
       {
-        "id": "ruleset_1",
+        "id": "ao_rules",
         "enabled": true,
         "path": "rules.json"
       }
     ]
-  }
+  },
+  "web_accessible_resources": [{
+    "resources": ["inject.js"],
+    "matches": ["*://twitter.com/*", "*://x.com/*"]
+  }]
 }

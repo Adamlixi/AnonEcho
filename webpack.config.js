@@ -4,8 +4,9 @@ const CopyPlugin = require('copy-webpack-plugin');
 module.exports = {
   entry: {
     content: './src/content.js',
+    background: './src/background.js',
     inject: './src/inject.js',
-    background: './src/background.js'
+    popup: './src/popup.jsx'
   },
   output: {
     filename: '[name].js',
@@ -15,12 +16,12 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
+            presets: ['@babel/preset-env', '@babel/preset-react']
           }
         }
       }
@@ -32,5 +33,8 @@ module.exports = {
         { from: 'public' }
       ]
     })
-  ]
+  ],
+  resolve: {
+    extensions: ['.js', '.jsx']
+  }
 }; 

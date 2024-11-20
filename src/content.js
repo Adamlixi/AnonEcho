@@ -342,7 +342,7 @@ function createComment(comment) {
         display: none;
     `;
 
-    const replyInput = createTextBox();  // 复用之前的 createTextBox 函数
+    const replyInput = createTextBox();  // 复用之前的 createTextBox 函���
     replyInput.style.marginTop = '8px';
 
     const replySubmitButton = document.createElement('button');
@@ -665,7 +665,7 @@ function setupUrlChangeListener() {
                 existingContainer.remove();
             }
             
-            // 等待页面加载完成后执行 insertElements
+            // 等待页面加载���成后执行 insertElements
             waitForElement('[data-testid="inline_reply_offscreen"]')
                 .then(() => {
                     insertElements();
@@ -792,3 +792,31 @@ function renderCommentTree(comments, container, level = 0) {
         }
     });
 }
+
+// 添加状态监听
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'EXTENSION_STATE_CHANGED') {
+    const isEnabled = message.enabled;
+    
+    // 获取容器
+    const container = document.querySelector('.custom-container');
+    if (container) {
+      if (isEnabled) {
+        container.style.display = 'block';
+      } else {
+        container.style.display = 'none';
+      }
+    }
+  }
+});
+
+// 在初始化时检查状态
+chrome.storage.local.get(['extensionEnabled'], (result) => {
+  const isEnabled = result.extensionEnabled !== false;
+  if (!isEnabled) {
+    const container = document.querySelector('.custom-container');
+    if (container) {
+      container.style.display = 'none';
+    }
+  }
+});
