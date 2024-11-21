@@ -527,6 +527,13 @@ const getComments = debounce((tweetId) => {
 function createContainer() {
     const container = document.createElement('div');
     container.className = 'custom-container';
+    container.style.cssText = `
+        background-color: #000;  // 添加黑色背景
+        padding: 16px;
+        border-radius: 16px;
+        margin: 16px 0;
+        border: 1px solid #2f3336;
+    `;
     
     const textBox = createTextBox();
     const buttonContainer = createButtonContainer();
@@ -537,7 +544,7 @@ function createContainer() {
     // 获取评论数据
     const currentUrl = window.location.href;
     const lastSegment = currentUrl.split('/').pop();
-    getComments(lastSegment);  // 使用防抖函数
+    getComments(lastSegment);
     
     return container;
 }
