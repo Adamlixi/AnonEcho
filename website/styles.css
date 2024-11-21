@@ -206,31 +206,82 @@ nav {
 }
 
 .install-steps {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 30px;
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0 20px;
 }
 
 .step {
-    text-align: center;
-    flex: 1;
-    min-width: 200px;
+    background: var(--darker-bg);
+    border: 1px solid var(--neon-green);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: left;
+    position: relative;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.step:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
 }
 
 .step-number {
-    width: 40px;
-    height: 40px;
-    background-color: var(--neon-green);
-    color: var(--dark-bg);
+    width: 36px;
+    height: 36px;
+    background-color: transparent;
+    border: 2px solid var(--neon-green);
+    color: var(--neon-green);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
     font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.step:hover .step-number {
+    background-color: var(--neon-green);
+    color: var(--darker-bg);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+}
+
+.step p {
+    font-size: 1.1em;
+    line-height: 1.5;
+    color: var(--text-color);
+}
+
+/* 添加图标支持 */
+.step-icon {
+    font-size: 2em;
+    color: var(--neon-green);
+    margin-bottom: 15px;
+}
+
+/* 移动端适配优化 */
+@media (max-width: 768px) {
+    .install-steps {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 15px;
+    }
+
+    .step {
+        padding: 25px;
+    }
+
+    .step p {
+        font-size: 1em;
+    }
 }
 
 /* Footer */
