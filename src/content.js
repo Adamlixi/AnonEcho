@@ -138,7 +138,6 @@ function createHelloButton() {
 
 function getXPostId(url) {
     const match = url.match(/status\/(\d+)/);
-    console.log(match[1])
     return match ? match[1] : null;
 }
 
