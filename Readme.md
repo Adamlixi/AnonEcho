@@ -11,7 +11,7 @@ We are developing to support multiple networks (Solana evm) and multiple applica
 We hope that AnonEcho can connect various traditional social platforms and become a cross-application anonymous social network.
 <br/>
 
-[X](X.png)
+![X](X.png)
 <br/>
 <br/>
 We will support more platforms soon.
