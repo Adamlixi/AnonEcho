@@ -120,7 +120,7 @@ function createHelloButton() {
         }
 
         const currentUrl = window.location.href;
-        const lastSegment = currentUrl.split('/').pop();
+        const lastSegment = getXPostId(currentUrl);
         window.postMessage({ 
             type: 'SIGN_TEXT',
             text: text.trim(),  // 确保去除首尾空格
@@ -134,6 +134,11 @@ function createHelloButton() {
     };
     
     return button;
+}
+
+function getXPostId(url) {
+    const match = url.match(/status\/(\d+)/);
+    return match ? match[1] : null;
 }
 
 // 添加抖动动画的样式
@@ -372,7 +377,7 @@ function createComment(comment) {
         if (replyText && replyText !== 'Write your anonymous comment...') {
             // 发送回复消息
             const currentUrl = window.location.href;
-            const lastSegment = currentUrl.split('/').pop();
+            const lastSegment = getXPostId(currentUrl);
             window.postMessage({ 
                 type: 'SIGN_TEXT',
                 text: replyText,  // 确保去除首尾空格
@@ -543,7 +548,7 @@ function createContainer() {
     
     // 获取评论数据
     const currentUrl = window.location.href;
-    const lastSegment = currentUrl.split('/').pop();
+    const lastSegment = getXPostId(currentUrl);
     getComments(lastSegment);
     
     return container;
